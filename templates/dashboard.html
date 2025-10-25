@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户控制台 - {{ user.username }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .navbar .user-info span {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .navbar .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+        
+        .navbar .logout-btn:hover {
+            background: #c0392b;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .profile-icon { background: #3498db; }
+        .activity-icon { background: #e74c3c; }
+        .course-icon { background: #27ae60; }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 1rem 0;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .item-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .item:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+        
+        .item h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .item p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .item .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #888;
+        }
+        
+        .status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status.registered { background: #d1ecf1; color: #0c5460; }
+        .status.attended { background: #d4edda; color: #155724; }
+        .status.enrolled { background: #d1ecf1; color: #0c5460; }
+        .status.completed { background: #d4edda; color: #155724; }
+        
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #888;
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .navbar {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🏠 用户控制台</h1>
+        <div class="user-info">
+            <span>欢迎，{{ user.username }}！</span>
+            <a href="/logout" class="logout-btn">退出登录</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- 统计概览 -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2><span class="card-icon profile-icon">👤</span>个人信息</h2>
+                <div class="stat-number">{{ user.full_name or '未填写' }}</div>
+                <p>{{ user.email or '未填写邮箱' }}</p>
+                <a href="/profile" class="btn">编辑资料</a>
+            </div>
+            
+            <div class="card">
+                <h2><span class="card-icon activity-icon">🎯</span>参与活动</h2>
+                <div class="stat-number">{{ activities|length }}</div>
+                <p>已参加 {{ activities|length }} 个活动</p>
+                <a href="#activities" class="btn">查看详情</a>
+            </div>
+            
+            <div class="card">
+                <h2><span class="card-icon course-icon">📚</span>学习课程</h2>
+                <div class="stat-number">{{ courses|length }}</div>
+                <p>已报名 {{ courses|length }} 门课程</p>
+                <a href="#courses" class="btn">查看详情</a>
+            </div>
+        </div>
+        
+        <!-- 活动信息 -->
+        <div class="section" id="activities">
+            <h2>🎯 我的活动</h2>
+            {% if activities %}
+                <div class="item-list">
+                    {% for user_activity in activities %}
+                    <div class="item">
+                        <h3>{{ user_activity.activity.title }}</h3>
+                        <p>{{ user_activity.activity.description }}</p>
+                        <div class="meta">
+                            <span>📅 {{ user_activity.activity.date.strftime('%Y年%m月%d日 %H:%M') }}</span>
+                            <span>📍 {{ user_activity.activity.location }}</span>
+                            <span class="status {{ user_activity.status }}">
+                                {% if user_activity.status == 'registered' %}已报名
+                                {% elif user_activity.status == 'attended' %}已参加
+                                {% else %}{{ user_activity.status }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>🎪 您还没有参加任何活动</p>
+                    <p>快去报名参加有趣的活动吧！</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- 课程信息 -->
+        <div class="section" id="courses">
+            <h2>📚 我的课程</h2>
+            {% if courses %}
+                <div class="item-list">
+                    {% for user_course in courses %}
+                    <div class="item">
+                        <h3>{{ user_course.course.title }}</h3>
+                        <p>{{ user_course.course.description }}</p>
+                        <p><strong>讲师:</strong> {{ user_course.course.instructor }}</p>
+                        <p><strong>课程时长:</strong> {{ user_course.course.duration }}</p>
+                        
+                        <!-- 进度条 -->
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ user_course.progress }}%"></div>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #666;">学习进度: {{ user_course.progress }}%</p>
+                        
+                        <div class="meta">
+                            <span>💰 ¥{{ "%.2f"|format(user_course.course.price) }}</span>
+                            <span>📅 {{ user_course.course.start_date.strftime('%Y-%m-%d') if user_course.course.start_date else '待定' }}</span>
+                            <span class="status {{ user_course.status }}">
+                                {% if user_course.status == 'enrolled' %}已报名
+                                {% elif user_course.status == 'completed' %}已完成
+                                {% else %}{{ user_course.status }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>📖 您还没有报名任何课程</p>
+                    <p>开始学习新技能吧！</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // 添加滚动时的动画效果
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // 为卡片添加观察
+            document.querySelectorAll('.card, .section').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

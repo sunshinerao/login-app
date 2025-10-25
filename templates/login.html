@@ -259,9 +259,10 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showMessage('登录成功！', 'success');
-                    // 这里可以跳转到用户dashboard或其他页面
-                    // window.location.href = '/dashboard';
+                    showMessage('登录成功！正在跳转到控制台...', 'success');
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/dashboard';
+                    }, 1500);
                 } else {
                     showMessage(data.message || '登录失败，请重试', 'error');
                 }
