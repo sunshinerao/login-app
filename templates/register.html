@@ -88,15 +88,17 @@
         }
         
         .requirement::before {
-            content: "✗";
+            content: "";
             position: absolute;
             left: 0;
-            color: #e74c3c;
-            font-weight: bold;
         }
         
-        .requirement.valid::before {
-            content: "✓";
+        .requirement {
+            color: #e74c3c;
+            transition: color 0.3s ease;
+        }
+        
+        .requirement.valid {
             color: #27ae60;
         }
         
@@ -207,18 +209,19 @@
         
         <form id="registerForm">
             <div class="form-group">
-                <label for="username">用户名</label>
-                <input type="text" id="username" name="username" required>
+                <label for="username">用户名/邮箱</label>
+                <input type="text" id="username" name="username" required placeholder="请输入用户名或邮箱地址">
             </div>
             
             <div class="form-group">
                 <label for="password">密码</label>
                 <input type="password" id="password" name="password" required>
                 <div class="password-requirements">
-                    <div class="requirement" id="length">至少8个字符</div>
-                    <div class="requirement" id="uppercase">包含大写字母</div>
-                    <div class="requirement" id="lowercase">包含小写字母</div>
-                    <div class="requirement" id="number">包含数字</div>
+                    <div style="font-weight: 600; color: #333; margin-bottom: 0.5rem;">密码要求：</div>
+                    <div class="requirement" id="length">✓ 至少8个字符</div>
+                    <div class="requirement" id="uppercase">✓ 包含大写字母(A-Z)</div>
+                    <div class="requirement" id="lowercase">✓ 包含小写字母(a-z)</div>
+                    <div class="requirement" id="number">✓ 包含数字(0-9)</div>
                 </div>
             </div>
             
@@ -253,6 +256,23 @@
             lowercase: document.getElementById('lowercase'),
             number: document.getElementById('number')
         };
+        
+        // 验证邮箱格式
+        function validateEmail(email) {
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return emailRegex.test(email);
+        }
+        
+        // 验证用户名格式（允许字母、数字、下划线、点号，3-20位）
+        function validateUsername(username) {
+            const usernameRegex = /^[a-zA-Z0-9._]{3,20}$/;
+            return usernameRegex.test(username);
+        }
+        
+        // 检查输入是否为邮箱格式
+        function isEmailFormat(input) {
+            return input.includes('@');
+        }
         
         // 验证密码要求
         function validatePassword(password) {
@@ -295,6 +315,26 @@
             }
         }
         
+        // 监听用户名输入
+        document.getElementById('username').addEventListener('blur', (e) => {
+            const username = e.target.value.trim();
+            if (username) {
+                if (isEmailFormat(username)) {
+                    if (!validateEmail(username)) {
+                        e.target.setCustomValidity('请输入有效的邮箱地址');
+                    } else {
+                        e.target.setCustomValidity('');
+                    }
+                } else {
+                    if (!validateUsername(username)) {
+                        e.target.setCustomValidity('用户名只能包含字母、数字、下划线和点号，长度3-20位');
+                    } else {
+                        e.target.setCustomValidity('');
+                    }
+                }
+            }
+        });
+
         // 监听密码输入
         passwordInput.addEventListener('input', (e) => {
             validatePassword(e.target.value);
@@ -320,15 +360,23 @@
             const password = passwordInput.value;
             const confirmPassword = confirmPasswordInput.value;
             
-            // 验证用户名
+            // 验证用户名/邮箱
             if (!username) {
-                showMessage('请输入用户名', 'error');
+                showMessage('请输入用户名或邮箱', 'error');
                 return;
             }
             
-            if (username.length < 3) {
-                showMessage('用户名至少需要3个字符', 'error');
-                return;
+            // 检查是邮箱还是用户名格式
+            if (isEmailFormat(username)) {
+                if (!validateEmail(username)) {
+                    showMessage('请输入有效的邮箱地址', 'error');
+                    return;
+                }
+            } else {
+                if (!validateUsername(username)) {
+                    showMessage('用户名只能包含字母、数字、下划线和点号，长度3-20位', 'error');
+                    return;
+                }
             }
             
             // 验证密码

@@ -4,13 +4,47 @@ from flask import Flask, request, jsonify, render_template, session, redirect, u
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import re
 from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.urandom(24)  # 用于会话管理
+# 使用固定的SECRET_KEY以保持会话持续性
+app.config['SECRET_KEY'] = 'your-secret-key-for-session-management-change-in-production'
+# 改进会话配置
+app.config['SESSION_COOKIE_SECURE'] = False  # 开发环境允许HTTP
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # 防止XSS攻击
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 允许同站点请求
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 会话1小时过期
 db = SQLAlchemy(app)
+
+# 验证函数
+def validate_email(email):
+    """验证邮箱格式"""
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(email_regex, email) is not None
+
+def validate_username(username):
+    """验证用户名格式：只允许字母、数字、下划线和点号，3-20位"""
+    username_regex = r'^[a-zA-Z0-9._]{3,20}$'
+    return re.match(username_regex, username) is not None
+
+def validate_password(password):
+    """验证密码强度：至少8位，包含大小写字母和数字"""
+    if len(password) < 8:
+        return False, "密码长度至少需要8位"
+    if not re.search(r'[A-Z]', password):
+        return False, "密码必须包含至少一个大写字母"
+    if not re.search(r'[a-z]', password):
+        return False, "密码必须包含至少一个小写字母"
+    if not re.search(r'\d', password):
+        return False, "密码必须包含至少一个数字"
+    return True, "密码格式正确"
+
+def is_email_format(input_str):
+    """判断输入是否为邮箱格式"""
+    return '@' in input_str
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -78,16 +112,29 @@ def register():
     
     # POST 请求处理注册逻辑
     data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
 
     if not username or not password:
-        return jsonify({'message': '用户名和密码不能为空'}), 400
+        return jsonify({'message': '用户名/邮箱和密码不能为空'}), 400
+
+    # 验证用户名/邮箱格式
+    if is_email_format(username):
+        if not validate_email(username):
+            return jsonify({'message': '请输入有效的邮箱地址'}), 400
+    else:
+        if not validate_username(username):
+            return jsonify({'message': '用户名只能包含字母、数字、下划线和点号，长度3-20位'}), 400
+
+    # 验证密码强度
+    is_valid_password, password_message = validate_password(password)
+    if not is_valid_password:
+        return jsonify({'message': password_message}), 400
 
     # 检查用户名是否已存在
     existing_user = User.query.filter_by(username=username).first()
     if existing_user:
-        return jsonify({'message': '用户名已存在'}), 400
+        return jsonify({'message': '用户名/邮箱已存在'}), 400
 
     # 使用pbkdf2:sha256方法来避免scrypt兼容性问题
     hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
@@ -108,28 +155,49 @@ def login():
     
     # POST 请求处理登录逻辑
     data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
 
     if not username or not password:
-        return jsonify({'message': '用户名和密码不能为空'}), 400
+        return jsonify({'message': '用户名/邮箱和密码不能为空'}), 400
+
+    # 验证输入格式
+    if is_email_format(username):
+        if not validate_email(username):
+            return jsonify({'message': '请输入有效的邮箱地址'}), 400
+    else:
+        if not validate_username(username):
+            return jsonify({'message': '用户名格式不正确'}), 400
+
+    if len(password) < 6:
+        return jsonify({'message': '密码长度不能少于6位'}), 400
 
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
+        session.permanent = True  # 使会话持久化
         session['user_id'] = user.id
         session['username'] = user.username
+        print(f"用户 {username} 登录成功，用户ID: {user.id}, 会话ID: {session.get('user_id')}")
         return jsonify({'message': '登录成功', 'redirect': '/dashboard'}), 200
     return jsonify({'message': '用户名或密码错误'}), 401
 
 @app.route('/dashboard')
 def dashboard():
+    from flask import request
+    print(f"Dashboard访问 - 会话内容: {dict(session)}")
+    print(f"Dashboard访问 - Cookie: {request.cookies}")
+    print(f"Dashboard访问 - User-Agent: {request.headers.get('User-Agent')}")
     if 'user_id' not in session:
+        print("未找到user_id，重定向到登录页面")
         return redirect(url_for('login'))
     
     user = User.query.get(session['user_id'])
     if not user:
+        print(f"未找到用户ID: {session['user_id']}")
         session.clear()
         return redirect(url_for('login'))
+    
+    print(f"Dashboard - 用户: {user.username}")    
     
     # 获取用户的活动和课程
     user_activities = UserActivity.query.filter_by(user_id=user.id).all()
@@ -214,4 +282,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         init_sample_data()
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
