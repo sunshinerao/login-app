@@ -221,19 +221,299 @@
             padding: 2rem;
         }
         
-        @media (max-width: 768px) {
+        /* 大屏桌面 (1200px+) */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1400px;
+            }
+            
             .dashboard-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 2.5rem;
+            }
+        }
+        
+        /* 桌面 (1024px - 1199px) */
+        @media (max-width: 1199px) and (min-width: 1024px) {
+            .container {
+                max-width: 1000px;
+                padding: 0 1.5rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1.5rem;
+            }
+        }
+        
+        /* 平板横屏 (769px - 1023px) */
+        @media (max-width: 1023px) and (min-width: 769px) {
+            .navbar {
+                padding: 1rem 1.5rem;
+            }
+            
+            .navbar h1 {
+                font-size: 1.3rem;
             }
             
             .container {
+                margin: 1.5rem auto;
+                padding: 0 1.5rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+        
+        /* 平板竖屏和大屏手机 (481px - 768px) */
+        @media (max-width: 768px) and (min-width: 481px) {
+            .navbar {
+                padding: 1rem;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .navbar h1 {
+                font-size: 1.2rem;
+                margin-bottom: 0;
+            }
+            
+            .navbar .user-info {
+                flex-direction: column;
+                gap: 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .navbar .logout-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .container {
+                margin: 1rem auto;
                 padding: 0 1rem;
             }
             
-            .navbar {
-                padding: 1rem;
-                flex-direction: column;
+            .dashboard-grid {
+                grid-template-columns: 1fr;
                 gap: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+                border-radius: 12px;
+            }
+            
+            .card h2 {
+                font-size: 1.1rem;
+            }
+            
+            .stat-number {
+                font-size: 1.8rem;
+                margin: 0.8rem 0;
+            }
+            
+            .section {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+                border-radius: 12px;
+            }
+            
+            .section h2 {
+                font-size: 1.3rem;
+                margin-bottom: 1rem;
+            }
+            
+            .item {
+                padding: 1rem;
+            }
+            
+            .item .meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+        
+        /* 手机设备 (max-width: 480px) */
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0.8rem;
+                flex-direction: column;
+                gap: 0.8rem;
+                text-align: center;
+            }
+            
+            .navbar h1 {
+                font-size: 1.1rem;
+            }
+            
+            .navbar .user-info {
+                flex-direction: column;
+                gap: 0.5rem;
+                font-size: 0.85rem;
+            }
+            
+            .navbar .user-info span {
+                word-break: break-all;
+            }
+            
+            .navbar .logout-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .container {
+                margin: 0.8rem auto;
+                padding: 0 0.8rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .card {
+                padding: 1.2rem;
+                border-radius: 10px;
+            }
+            
+            .card h2 {
+                font-size: 1rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .card-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 0.8rem;
+            }
+            
+            .stat-number {
+                font-size: 1.6rem;
+                margin: 0.6rem 0;
+            }
+            
+            .card p {
+                font-size: 0.85rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+                border-radius: 6px;
+            }
+            
+            .section {
+                padding: 1.2rem;
+                margin-bottom: 1rem;
+                border-radius: 10px;
+            }
+            
+            .section h2 {
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+            }
+            
+            .item {
+                padding: 1rem;
+                border-radius: 8px;
+            }
+            
+            .item h3 {
+                font-size: 1rem;
+                margin-bottom: 0.4rem;
+            }
+            
+            .item p {
+                font-size: 0.85rem;
+                margin-bottom: 0.4rem;
+            }
+            
+            .item .meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.4rem;
+                font-size: 0.8rem;
+            }
+            
+            .status {
+                padding: 0.2rem 0.6rem;
+                font-size: 0.75rem;
+            }
+            
+            .progress-bar {
+                height: 6px;
+                margin: 0.4rem 0;
+            }
+            
+            .empty-state {
+                padding: 1.5rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* 超小屏幕 (max-width: 320px) */
+        @media (max-width: 320px) {
+            .navbar {
+                padding: 0.6rem;
+            }
+            
+            .navbar h1 {
+                font-size: 1rem;
+            }
+            
+            .container {
+                margin: 0.5rem auto;
+                padding: 0 0.5rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+            .stat-number {
+                font-size: 1.4rem;
+            }
+            
+            .section {
+                padding: 1rem;
+            }
+            
+            .item {
+                padding: 0.8rem;
+            }
+        }
+        
+        /* 触摸设备优化 */
+        @media (hover: none) {
+            .card:hover {
+                transform: none;
+            }
+            
+            .btn:hover {
+                transform: none;
+            }
+            
+            .item:hover {
+                background: #f8f9fa;
+                border-color: #e9ecef;
             }
         }
     </style>
